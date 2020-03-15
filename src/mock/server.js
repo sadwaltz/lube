@@ -41,6 +41,16 @@ app.get('/api', function (req, res) {
                     y : Math.random()
                 }
             },
+            {
+                sell : {
+                    x : temp+5000,
+                    y : Math.random()
+                },
+                buy : {
+                    x : temp+5000,
+                    y : Math.random()
+                }
+            },
             
         ],
         success : true
