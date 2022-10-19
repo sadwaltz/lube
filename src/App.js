@@ -13,6 +13,10 @@ export  class App extends Component {
     this.updateWeight1 = this.updateWeight1.bind(this);
     this.updateItem2 = this.updateItem2.bind(this);
     this.updateWeight2 = this.updateWeight2.bind(this);
+    this.updateCount = this.updateCount.bind(this);
+    this.updateInterval = this.updateInterval.bind(this);
+    this.updateCurrent1 = this.updateCurrent1.bind(this);
+    this.updateCurrent2 = this.updateCurrent2.bind(this);
   }
   timeTicket = null;
   count = 51;
@@ -20,8 +24,12 @@ export  class App extends Component {
                             fresh:'start',
                             item1:'',
                             weight1:'',
+                            current1:'',
                             item2:'',
                             weight2:'',
+                            current2:'',
+                            count:'',
+                            interval:'',
                             editable:true});
 
   
@@ -31,10 +39,11 @@ export  class App extends Component {
     let weight1 = this.state.weight1;
     let item2 = this.state.item2;
     let weight2 = this.state.weight2;
+    let count = this.state.count;
     const option = lodash.cloneDeep(this.state.option); // immutable
     option.title.text = '测试版：' + new Date().getSeconds();
     global.$.get({
-      url:'/api?p1='+item1+'&p2='+item2+'&x='+weight1+'&y='+weight2,
+      url:'/api1?p1='+item1+'&p2='+item2+'&x='+weight1+'&y='+weight2,
       success(res){
         console.log('success',res);
         if (res.success){
@@ -46,11 +55,18 @@ export  class App extends Component {
             
             //data0.shift();
             //data0.push(Math.round(Math.random() * 1000));
-            data0.push(element.buy.y);
+            data0.push(element.buy);
             
             //data1.shift();
-            data1.push(element.sell.y);
+            data1.push(element.sell);
             option.xAxis[0].data.push(new Date().toLocaleTimeString().replace(/^\D*/,''));
+            while (data0.length > Number(count))
+            {
+              //console.log("Length:"+data0.length);
+              data0.shift();
+              data1.shift();
+              option.xAxis[0].data.shift();
+            }
           });
           
         }
@@ -64,6 +80,8 @@ export  class App extends Component {
     });
     this.setState({
       option:option,
+      current1:option.series[0].data[option.series[0].data.length-1],
+      current2:option.series[1].data[option.series[1].data.length-1]
     });
   };
 
@@ -94,6 +112,26 @@ export  class App extends Component {
       weight2:evt.target.value,
     });
   };
+  updateCount(evt){
+    this.setState({
+      count:evt.target.value,
+    });
+  };
+  updateInterval(evt){
+    this.setState({
+      interval:evt.target.value,
+    });
+  };
+  updateCurrent1(evt){
+    this.setState({
+      current1:evt.target.value,
+    });
+  };
+  updateCurrent2(evt){
+    this.setState({
+      current2:evt.target.value,
+    });
+  };
   //在zoom时保持用户选择不变
   onDataZoomed = (params)  => {
     //var startnum = params.start;
@@ -107,10 +145,11 @@ export  class App extends Component {
   };
   handleClick = () => {
     let freshState = this.state.fresh;
+    let interval = this.state.interval;
     //const option = lodash.cloneDeep(this.state.option); // immutable
     if (freshState === 'start') {
       clearInterval(this.timeTicket);
-      this.timeTicket = setInterval(this.fetchNewDate, 10000);//10秒
+      this.timeTicket = setInterval(this.fetchNewDate, interval*1000);//10秒
       this.setState({
         //option: option,
         fresh:'pause',
@@ -216,7 +255,15 @@ export  class App extends Component {
             option={this.state.option}
             style={{height: 400}} 
             onEvents={onEvents}/>
-          <div id="controllPanel" style={{margin:'auto',width:600}} >
+          <div id="controllPanel" style={{margin:'auto',width:800}} >
+            <p>
+              <label>卖1价差：</label>
+              <label id="current2" >{this.state.current2} </label>
+            </p>
+            <p>
+              <label>买1价差：</label>
+              <label id="current1" >{this.state.current1} </label>
+            </p>
             <p>
               <label>品种1</label>
               <input id="item1" onChange={this.updateItem1} editable={this.editable}/>
@@ -228,6 +275,12 @@ export  class App extends Component {
               <input id="item2" onChange={this.updateItem2}/>
               <label>加权</label>
               <input id="weight2" onChange={this.updateWeight2}/>
+            </p>
+            <p>
+              <label>采样个数</label>
+              <input id="count" onChange={this.updateCount}/>
+              <label>刷新间隔</label>
+              <input id="interval" onChange={this.updateInterval}/>
             </p>
             <p>
               <button id="trigger" onClick={this.handleClick}>{this.state.fresh}</button>

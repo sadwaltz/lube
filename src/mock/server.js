@@ -7,22 +7,16 @@ app.get('/', function (req, res) {
 app.get('/api1', function (req, res) {  
     let temp = Date.now();
     let data = {
+        success : true,
         data : [
             {
-                sell : {
-                    x : temp,
-                    y : Math.random()
-                },
-                buy : {
-                    x : temp,
-                    y : Math.random()
-                }
-            },
+                asix : temp, 
+                sell : Math.random(),               
+                buy :  Math.random()               
+            }
             
         ]
-        
-        
-        
+                
     };
     //res.send('Hello world!'+req.query.future);
     res.json(data);
